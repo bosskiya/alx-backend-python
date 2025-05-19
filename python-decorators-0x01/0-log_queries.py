@@ -9,7 +9,7 @@ from datetime import datetime
 def log_queries(func):
     @functools.wraps(func)
     def wrapper(query, *args, **kwargs):
-        print(f"[LOG] Executing SQL Query: {query}" + " Date and Time: " + str(datetime.date))
+        print(f"[LOG] Executing SQL Query: {query}")
         return func(query, *args, **kwargs)
     return wrapper
 
