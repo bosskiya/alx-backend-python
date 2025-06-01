@@ -36,10 +36,10 @@ class TestAccessNestedMap(unittest.TestCase):
         """
         with self.assertRaises(KeyError) as AS:
             access_nested_map(nested_map, path)
-        index = AS.exception.args[0]
-        self.assertEqual(AS.exception.args[0],
-            path[len(AS.exception.args[0]) if isinstance(index, int) else path.index(index)]
-        )
+        idx = AS.exception.args[0]
+        self.assertEqual(
+            idx,
+            path[len(idx) if isinstance(idx, int) else path.index(idx)])
 
 
 class TestGetJson(unittest.TestCase):
@@ -80,11 +80,11 @@ class TestMemoize(unittest.TestCase):
             @memoize
             def a_property(self):
                 return self.a_method()
-        with patch.object(TestClass, 'a_method', return_value=42,) as mock_method:
+        with patch.object(TestClass, 'a_method', return_value=42,) as mm:
             obj = TestClass()
             self.assertEqual(obj.a_property, 42)
             self.assertEqual(obj.a_property, 42)
-            mock_method.assert_called_once()
+            mm.assert_called_once()
 
 
 if "__main__" == __name__:
