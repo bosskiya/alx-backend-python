@@ -49,7 +49,10 @@ class TestGithubOrgClient(unittest.TestCase):
         url = "https://api.github.com/orgs/test-org/repos"
 
         with patch.object(
-            GithubOrgClient, "_public_repos_url", new_callable=PropertyMock) as mock_url:
+            GithubOrgClient,
+            "_public_repos_url",
+            new_callable=PropertyMock
+        ) as mock_url:
             mock_url.return_value = url
             client = GithubOrgClient("test-org")
 
@@ -83,7 +86,7 @@ class TestGithubOrgClient(unittest.TestCase):
         "expected_repos": expected_repos,
         "apache2_repos": apache2_repos
     }
-    for 
+    for
     org_payload,
     repos_payload,
     expected_repos,
