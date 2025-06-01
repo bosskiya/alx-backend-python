@@ -38,10 +38,7 @@ class TestAccessNestedMap(unittest.TestCase):
             access_nested_map(nested_map, path)
         self.assertEqual(
             AS.exception.args[0],
-            path[len(AS.exception.args[0])
-                if isinstance(AS.exception.args[0], int) 
-                else path.index(AS.exception.args[0])
-            ]
+            path[len(AS.exception.args[0]) if isinstance(AS.exception.args[0], int) else path.index(AS.exception.args[0])]
         )
 
 
