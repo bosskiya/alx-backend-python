@@ -6,14 +6,13 @@ class UserSerializer(serializers.ModelSerializer):
     """
     Serializer for User model
     """
-    id = serializers.UUIDField(source='user_id', read_only=True, format='hex')
     full_name = serializers.SerializerMethodField()
     phone_number = serializers.CharField(source='phone_number')
     created = serializers.DateTimeField(read_only=True)
 
     class Meta:
         model = user
-        fields = ['id', 'email', 'first_name', 'last_name', 'full_name', 'phone_number', 'is_active', 'created']
+        fields = ['user_id', 'email', 'first_name', 'last_name', 'full_name', 'phone_number', 'is_active', 'created']
         read_only_field = ['is_active']
 
     def get_full_name(self, obj):
@@ -30,11 +29,10 @@ class MessageSerializer(serializers.ModelSerializer):
     Serializer for Message model
     """
     sender = UserSerializer(read_only=True)
-    id = serializers.UUIDField(source='message_id', read_only=True, format='hex')
 
     class Meta:
         model = Message
-        fields = ['id', 'sender', 'message_body', 'sent_at']
+        fields = ['message_id', 'sender', 'message_body', 'sent_at']
 
 
 class ConversationSerializer(serializers.ModelSerializer):
@@ -43,8 +41,7 @@ class ConversationSerializer(serializers.ModelSerializer):
     """
     participants = UserSerializer(many=True, read_only=True)
     messages = MessageSerializer(many=True, read_only=True)
-    id = serializers.UUIDField(source='conversation_id', read_only=True, format='hex')
 
     class Meta:
         model = Conversation
-        fields = ['id', 'participants', 'created_at', 'messages']
+        fields = ['conversation_id', 'participants', 'created_at', 'messages']
