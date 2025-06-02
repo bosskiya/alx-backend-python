@@ -1,16 +1,17 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, filters
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .models import Conversation, Message, user
 from .serializers import ConversationSerializer, MessageSerializer
 from django.shortcuts import get_object_or_404
 
+
 class ConversationViewSet(viewsets.ModelViewSet):
-    """
-    Allows users to list their conversations and create new ones.
-    """
     serializer_class = ConversationSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ['created_at']
+    ordering = ['-created_at']
 
     def get_queryset(self):
         return Conversation.objects.filter(participants=self.request.user).distinct()
@@ -20,23 +21,23 @@ class ConversationViewSet(viewsets.ModelViewSet):
         if not participant_ids:
             return Response({'error': 'At least one participant is required.'}, status=400)
 
-        # Ensure all participant IDs are valid
         participants = user.objects.filter(user_id__in=participant_ids)
         if not participants:
             return Response({'error': 'No valid users found.'}, status=400)
 
         conversation = Conversation.objects.create()
-        conversation.participants.add(*participants, request.user)  # include sender
+        conversation.participants.add(*participants, request.user)
         serializer = self.get_serializer(conversation)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class MessageViewSet(viewsets.ModelViewSet):
-    """
-    Allows users to list messages in a conversation and send new messages.
-    """
     serializer_class = MessageSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [filters.OrderingFilter, filters.SearchFilter]
+    ordering_fields = ['sent_at']
+    ordering = ['sent_at']
+    search_fields = ['message_body']
 
     def get_queryset(self):
         conversation_id = self.kwargs.get('conversation_pk')
