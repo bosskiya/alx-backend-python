@@ -74,4 +74,4 @@ class Message(models.Model):
     sent_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Message {self.id} from {self.sender.username}"
+        return f"Message {self.message_id} from {self.sender.username}"
