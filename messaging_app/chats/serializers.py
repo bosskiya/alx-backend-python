@@ -7,12 +7,22 @@ class UserSerializer(serializers.ModelSerializer):
     Serializer for User model
     """
     id = serializers.UUIDField(source='user_id', read_only=True, format='hex')
+    full_name = serializers.SerializerMethodField()
+    phone_number = serializers.CharField(source='phone_number')
     created = serializers.DateTimeField(read_only=True)
 
     class Meta:
         model = user
-        fields = ['id', 'email', 'first_name', 'last_name', 'phone_number', 'is_active', 'created']
+        fields = ['id', 'email', 'first_name', 'last_name', 'full_name', 'phone_number', 'is_active', 'created']
         read_only_field = ['is_active']
+
+    def get_full_name(self, obj):
+        return f"{obj.first_name} {obj.last_name}".strip()
+
+    def validate_email(self, value):
+        if not value.endswith("@example.com"):
+            raise serializers.ValidationError("Email must be on the @example.com domain.")
+        return value
 
 
 class MessageSerializer(serializers.ModelSerializer):
