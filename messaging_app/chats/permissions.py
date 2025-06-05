@@ -1,9 +1,9 @@
-from rest_framework.permissions import BasePermission, SAFE_METHODS
+from rest_framework import permissions
 
-class PermissionedUserOnlyBasePermission:
+class PermissionedUserOnlyBasePermission(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.user.is_anonymous:
-            return request.method in SAFE_METHODS
+            return request.method in permissions.SAFE_METHODS
         if view.basename in ['post']:
             return bool(request.user and request.user.is_authenticated)
         return False
@@ -11,6 +11,6 @@ class PermissionedUserOnlyBasePermission:
     def has_permission(self, request, view):
         if view.basename in ["post"]:
             if request.user.is_anonymous:
-                return request.method in SAFE_METHODS
+                return request.method in permissions.SAFE_METHODS
             return bool(request.user and request.user.is_authenticated)
         return False
