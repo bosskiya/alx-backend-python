@@ -5,10 +5,12 @@ from .models import Conversation, Message, user
 from .serializers import ConversationSerializer, MessageSerializer
 from django.shortcuts import get_object_or_404
 
+from .permissions import IsParticipant, IsMessageSenderOrParticipant
+
 
 class ConversationViewSet(viewsets.ModelViewSet):
     serializer_class = ConversationSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsParticipant]
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ['created_at']
     ordering = ['-created_at']
@@ -33,7 +35,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
 
 class MessageViewSet(viewsets.ModelViewSet):
     serializer_class = MessageSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsMessageSenderOrParticipant]
     filter_backends = [filters.OrderingFilter, filters.SearchFilter]
     ordering_fields = ['sent_at']
     ordering = ['sent_at']
