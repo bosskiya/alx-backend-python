@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime, time
 from django.http import JsonResponse
+from collections import defaultdict
 
 logger = logging.getLogger('request_logger')
 logger.setLevel(logging.INFO)
@@ -33,15 +34,12 @@ class RestrictAccessByTimeMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
 
-        # Define allowed access hours
-        self.start_time = time(6, 0)   # 6:00 AM
-        self.end_time = time(21, 0)    # 9:00 PM
+        self.start_time = time(6, 0)
+        self.end_time = time(21, 0)
 
     def __call__(self, request):
         now = datetime.now().time()
 
-        # Check if current time is outside allowed range
-        # Allowed: between 6 AM (inclusive) and 9 PM (exclusive)
         if not (self.start_time <= now < self.end_time):
             return JsonResponse(
                 {"detail": "Access to messaging app is restricted between 9 PM and 6 AM."},
@@ -50,3 +48,37 @@ class RestrictAccessByTimeMiddleware:
 
         response = self.get_response(request)
         return response
+
+
+class OffensiveLanguageMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+        self.ip_message_times = defaultdict(list)
+        self.MESSAGE_LIMIT = 5
+        self.TIME_WINDOW = 60
+
+    def __call__(self, request):
+        if request.method == 'POST' and request.path.startswith('/api/messages/'):
+            ip = self.get_client_ip(request)
+            now = time.time()
+
+            self.ip_message_times[ip] = [t for t in self.ip_message_times[ip] if now - t < self.TIME_WINDOW]
+
+            if len(self.ip_message_times[ip]) >= self.MESSAGE_LIMIT:
+                return JsonResponse(
+                    {'detail': 'Message rate limit exceeded. Please wait before sending more messages.'},
+                    status=429
+                )
+
+            self.ip_message_times[ip].append(now)
+
+        response = self.get_response(request)
+        return response
+
+    def get_client_ip(self, request):
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0].strip()
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
