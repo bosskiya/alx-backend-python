@@ -1,6 +1,6 @@
 from rest_framework import permissions
 
-class PermissionedUserOnlyBasePermission(permissions.BasePermission):
+class IsParticipantOfConversation(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.user.is_anonymous:
             return request.method in permissions.SAFE_METHODS
