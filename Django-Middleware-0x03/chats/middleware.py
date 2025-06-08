@@ -91,16 +91,18 @@ class RolePermissionMiddleware:
 
     def __call__(self, request):
         user = getattr(request, 'user', None)
+
         if user and user.is_authenticated:
+            # Assuming your User model has a 'role' attribute (string)
             user_role = getattr(user, 'role', '').lower()
 
             if user_role not in self.allowed_roles:
                 return JsonResponse(
-                    {'detail': 'You do not have permission to access this resource.'},
+                    {'detail': 'You do not have permission to perform this action.'},
                     status=403
                 )
         else:
-            # If no user or not authenticated, block access
+            # If user not authenticated
             return JsonResponse(
                 {'detail': 'Authentication credentials were not provided.'},
                 status=403
