@@ -2,6 +2,7 @@ from rest_framework import permissions
 from .models import Conversation, Message
 
 class IsParticipantOfConversation(permissions.BasePermission):
+    http_method_names = ('put', 'patch', 'delete')
     def has_permission(self, request, view):
         return request.user and request.user.is_authenticated
 
