@@ -84,7 +84,7 @@ class OffensiveLanguageMiddleware:
         return ip
 
 
-class RolePermissionMiddleware:
+class RolepermissionMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
         self.allowed_roles = {'admin', 'moderator'}
@@ -93,7 +93,6 @@ class RolePermissionMiddleware:
         user = getattr(request, 'user', None)
 
         if user and user.is_authenticated:
-            # Assuming your User model has a 'role' attribute (string)
             user_role = getattr(user, 'role', '').lower()
 
             if user_role not in self.allowed_roles:
@@ -102,7 +101,6 @@ class RolePermissionMiddleware:
                     status=403
                 )
         else:
-            # If user not authenticated
             return JsonResponse(
                 {'detail': 'Authentication credentials were not provided.'},
                 status=403
