@@ -11,9 +11,6 @@ from .permissions import IsParticipantOfConversation
 class ConversationViewSet(viewsets.ModelViewSet):
     serializer_class = ConversationSerializer
     permission_classes = [IsAuthenticated, IsParticipantOfConversation]
-    filter_backends = [filters.OrderingFilter]
-    ordering_fields = ['created_at']
-    ordering = ['-created_at']
 
     def get_queryset(self):
         return Conversation.objects.filter(participants=self.request.user).distinct()
@@ -36,28 +33,30 @@ class ConversationViewSet(viewsets.ModelViewSet):
 class MessageViewSet(viewsets.ModelViewSet):
     serializer_class = MessageSerializer
     permission_classes = [IsAuthenticated, IsParticipantOfConversation]
-    filter_backends = [filters.OrderingFilter, filters.SearchFilter]
-    ordering_fields = ['sent_at']
-    ordering = ['sent_at']
-    search_fields = ['message_body']
 
     def get_queryset(self):
-        conversation_id = self.kwargs.get('conversation_pk')
-        conversation = get_object_or_404(Conversation, conversation_id=conversation_id, participants=self.request.user)
-        return conversation.messages.order_by('sent_at')
+        return Message.objects.filter(conversation__participants=self.request.user)
 
     def create(self, request, *args, **kwargs):
-        conversation_id = self.kwargs.get('conversation_pk')
-        conversation = get_object_or_404(Conversation, conversation_id=conversation_id, participants=request.user)
+        conversation_id = request.data.get('conversation')
+        content = request.data.get('content')
 
-        message_body = request.data.get('message_body')
-        if not message_body:
-            return Response({'error': 'Message body is required.'}, status=400)
+        if not conversation_id or not content:
+            return Response({'error': 'conversation and content are required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            conversation = Conversation.objects.get(id=conversation_id)
+        except Conversation.DoesNotExist:
+            return Response({'error': 'Conversation not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if request.user not in conversation.participants.all():
+            return Response({'error': 'You are not a participant of this conversation.'}, status=status.HTTP_403_FORBIDDEN)
 
         message = Message.objects.create(
             sender=request.user,
             conversation=conversation,
-            message_body=message_body
+            content=content
         )
+
         serializer = self.get_serializer(message)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
