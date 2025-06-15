@@ -22,13 +22,14 @@ def delete_user(request):
 
 
 class MessageViewSet(viewsets.ModelViewSet):
-    queryset = Message.objects.all().select_related(
+    queryset = Message.objects.filter().select_related(
         'sender', 'receiver', 'edited_by', 'parent_message'
     ).prefetch_related('replies')
     serializer_class = MessageSerializer
 
     def perform_create(self, serializer):
-        serializer.save(sender=self.request.user)
+        sender=self.request.user
+        serializer.save(sender)
 
     @action(detail=True, methods=['get'], url_path='thread')
     def get_thread(self, request, pk=None):
