@@ -26,7 +26,7 @@ def delete_user(request):
 @permission_classes([IsAuthenticated])
 def unread_messages_view(request):
     user = request.user
-    unread_messages = Message.unread.for_user(user)
+    unread_messages = Message.unread.unread_for_user(user).only('id', 'content', 'timestamp', 'sender')
     serializer = MessageSerializer(unread_messages, many=True)
     return Response(serializer.data)
 
