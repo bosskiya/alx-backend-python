@@ -20,17 +20,18 @@ def delete_user(request):
     user.delete()
     return JsonResponse({"message": f"User '{username}' and related data deleted."})
 
+
 class MessageViewSet(viewsets.ModelViewSet):
-    queryset = Message.objects.filter().select_related(
+    queryset = Message.objects.all().select_related(
         'sender', 'receiver', 'edited_by', 'parent_message'
     ).prefetch_related('replies')
     serializer_class = MessageSerializer
 
+    def perform_create(self, serializer):
+        serializer.save(sender=self.request.user)
+
     @action(detail=True, methods=['get'], url_path='thread')
     def get_thread(self, request, pk=None):
-        """
-        Custom action to return all threaded replies to a message
-        """
         message = get_object_or_404(Message, pk=pk)
         thread_replies = message.get_thread()
         serializer = self.get_serializer(thread_replies, many=True)
