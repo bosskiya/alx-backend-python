@@ -8,6 +8,8 @@ from rest_framework.response import Response
 from .models import Message
 from .serializers import MessageSerializer
 from django.shortcuts import get_object_or_404
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 
 
 User = get_user_model()
@@ -19,6 +21,14 @@ def delete_user(request):
     username = user.username
     user.delete()
     return JsonResponse({"message": f"User '{username}' and related data deleted."})
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def unread_messages_view(request):
+    user = request.user
+    unread_messages = Message.unread.for_user(user)
+    serializer = MessageSerializer(unread_messages, many=True)
+    return Response(serializer.data)
 
 
 class MessageViewSet(viewsets.ModelViewSet):
