@@ -27,8 +27,8 @@ class MessageViewSet(viewsets.ModelViewSet):
     ).prefetch_related('replies')
     serializer_class = MessageSerializer
 
-    def perform_create(self, serializer):
-        sender=self.request.user
+    def perform_create(self, request, serializer):
+        sender=request.user
         serializer.save(sender)
 
     @action(detail=True, methods=['get'], url_path='thread')
