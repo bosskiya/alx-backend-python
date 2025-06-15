@@ -42,6 +42,7 @@ INSTALLED_APPS = [
 
     'chats',
     'messaging',
+    'Django-Chat',
 
     'rest_framework',
     'rest_framework_simplejwt',
