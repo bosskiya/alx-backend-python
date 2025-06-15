@@ -12,8 +12,21 @@ class Message(models.Model):
     edited = models.BooleanField(default=False)
     edited_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL, related_name='edited_messages')
 
+    parent_message = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='replies')
+
     def __str__(self):
-        return f"Message from {self.sender} to {self.receiver}"
+        return f"Message from {self.sender} -> {self.receiver}"
+
+    def get_thread(self):
+        replies = []
+        def fetch_replies(message):
+            children = message.replies.all()
+            for child in children:
+                replies.append(child)
+                fetch_replies(child)
+
+        fetch_replies(self)
+        return replies
 
 
 class Notification(models.Model):
