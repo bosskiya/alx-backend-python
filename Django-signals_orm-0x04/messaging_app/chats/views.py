@@ -8,19 +8,6 @@ from .models import Conversation, Message, user
 from .serializers import ConversationSerializer, MessageSerializer
 from django.shortcuts import get_object_or_404
 from .permissions import IsParticipantOfConversation
-from django.views.decorators.cache import cache_page
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.response import Response
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-@cache_page(60)
-def conversation_messages(request, conversation_id):
-    messages = Message.objects.filter(conversation_id=conversation_id).select_related(
-        'sender', 'receiver'
-    ).order_by('timestamp')
-    serializer = MessageSerializer(messages, many=True)
-    return Response(serializer.data)
 
 
 class ConversationViewSet(viewsets.ModelViewSet):

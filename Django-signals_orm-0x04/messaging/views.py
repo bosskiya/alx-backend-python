@@ -10,9 +10,19 @@ from .serializers import MessageSerializer
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
-
+from django.views.decorators.cache import cache_page
 
 User = get_user_model()
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@cache_page(60)
+def conversation_messages(request, conversation_id):
+    messages = Message.objects.filter(conversation_id=conversation_id).select_related(
+        'sender', 'receiver'
+    ).order_by('timestamp')
+    serializer = MessageSerializer(messages, many=True)
+    return Response(serializer.data)
 
 @require_http_methods(["DELETE"])
 @login_required
