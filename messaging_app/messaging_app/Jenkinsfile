@@ -1,0 +1,53 @@
+pipeline {
+    agent {
+        label 'master'
+    }
+
+    tools {
+        python 'Python3'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git url: 'https://github.com/bosskiya/alx-backend-python/alx-backend-python.git', branch: 'main'
+            }
+        }
+
+        stage('Setup Python Environment') {
+            steps {
+                withPythonEnv('Python3') {
+                    sh '''
+                        cd messaging_app
+                        python3 -m venv venv
+                        source venv/bin/activate
+                        pip install --upgrade pip
+                        pip install -r requirements.txt
+                    '''
+                }
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                withPythonEnv('Python3') {
+                    sh '''
+                        cd messaging_app
+                        source venv/bin/activate
+                        pytest --junitxml=report.xml
+                    '''
+                }
+            }
+        }
+
+        stage('Publish Report') {
+            steps {
+                junit 'messaging_app/report.xml'
+            }
+        }
+    }
+
+    triggers {
+        // No triggers for now; manual only
+    }
+}
